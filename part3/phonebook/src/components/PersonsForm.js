@@ -39,19 +39,39 @@ const PersonsForm = ({ persons, setPersons, setNotification }) => {
             setTimeout(() => {
               setNotification({ type: null, message: null });
             }, 5000);
+          })
+          .catch((err) => {
+            setNotification({
+              type: "error",
+              message: `${err.response.data.error}`,
+            });
+            setTimeout(() => {
+              setNotification({ type: null, message: null });
+            }, 5000);
           });
       }
     } else {
       const personObject = { name: newName, number: newNumber };
-      personsService.create(personObject).then((returnedPerson) => {
-        setPersons(persons.concat(returnedPerson));
-        setNewName("");
-        setNewNumber("");
-        setNotification({ type: "success", message: `Added ${newName}` });
-        setTimeout(() => {
-          setNotification({ type: null, message: null });
-        }, 5000);
-      });
+      personsService
+        .create(personObject)
+        .then((createdPerson) => {
+          setPersons(persons.concat(createdPerson));
+          setNewName("");
+          setNewNumber("");
+          setNotification({ type: "success", message: `Added ${newName}` });
+          setTimeout(() => {
+            setNotification({ type: null, message: null });
+          }, 5000);
+        })
+        .catch((err) => {
+          setNotification({
+            type: "error",
+            message: `${err.response.data.error}`,
+          });
+          setTimeout(() => {
+            setNotification({ type: null, message: null });
+          }, 5000);
+        });
     }
   };
 

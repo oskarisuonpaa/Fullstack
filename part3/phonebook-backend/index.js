@@ -4,6 +4,7 @@ const cors = require("cors");
 const app = express();
 
 app.use(express.json());
+app.use(express.static("build"));
 
 morgan.token("body", (req) => {
   if (req.method === "POST") {
@@ -63,10 +64,10 @@ app.get("/api/persons/:id", (req, res) => {
 
 app.delete("/api/persons/:id", (req, res) => {
   const id = Number(req.params.id);
-  const person = persons.find((person) => person.id === id);
+  const index = persons.findIndex((person) => person.id === id);
 
-  if (person) {
-    persons.splice(person, 1);
+  if (index > -1) {
+    persons.splice(index, 1);
     res.sendStatus(200);
   } else {
     res.sendStatus(404);

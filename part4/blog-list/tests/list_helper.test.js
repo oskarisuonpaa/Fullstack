@@ -13,7 +13,7 @@ describe("total likes", () => {
     expect(result).toBe(0);
   });
 
-  test("when list has only one blog equals the likes of that", () => {
+  test("when list has only one blog, equals the likes of that", () => {
     const blogs = [
       {
         _id: "5a422aa71b54a676234d17f8",
@@ -91,7 +91,7 @@ describe("favorite blog", () => {
     expect(result).toBe(null);
   });
 
-  test("when list has only one blog equals to that", () => {
+  test("when list has only one blog, equals to that", () => {
     const blogs = [
       {
         _id: "5a422aa71b54a676234d17f8",
@@ -177,7 +177,7 @@ describe("most blogs", () => {
     expect(result).toBe(null);
   });
 
-  test("when list has only one blog equals to that", () => {
+  test("when list has only one blog, equals to that", () => {
     const blogs = [
       {
         _id: "5a422aa71b54a676234d17f8",
@@ -261,7 +261,7 @@ describe("most likes", () => {
     expect(result).toBe(null);
   });
 
-  test("when list has only one blog equals to that", () => {
+  test("when list has only one blog, equals to that", () => {
     const blogs = [
       {
         _id: "5a422aa71b54a676234d17f8",

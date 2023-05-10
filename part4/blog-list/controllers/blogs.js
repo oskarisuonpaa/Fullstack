@@ -1,36 +1,57 @@
 const Blog = require("../models/blog");
 
+const { tokenExtractor, userExtractor } = require("../utils/middleware");
+
 const blogsRouter = require("express").Router();
 
 blogsRouter.get("/", async (request, response) => {
-  const blogs = await Blog.find({});
-  return response.json(blogs);
+  const blogs = await Blog.find({}).populate("user", { username: 1, name: 1 });
+  response.json(blogs);
 });
 
-blogsRouter.post("/", async (request, response) => {
-  if (!request.body.url || !request.body.title) {
-    return response.sendStatus(400);
+blogsRouter.post(
+  "/",
+  tokenExtractor,
+  userExtractor,
+  async (request, response) => {
+    const user = request.user;
+
+    const { title, author, url } = request.body;
+
+    const blog = new Blog({
+      title,
+      author,
+      url,
+      user: user._id,
+    });
+
+    const savedBlog = await blog.save();
+    user.blogs = user.blogs.concat(savedBlog._id);
+    await user.save();
+
+    response.status(201).json(savedBlog);
   }
+);
 
-  const blog = new Blog(request.body);
-  const result = await blog.save();
-  return response.status(201).json(result);
-});
+blogsRouter.delete(
+  "/:id",
+  tokenExtractor,
+  userExtractor,
+  async (request, response) => {
+    const user = request.user;
 
-blogsRouter.delete("/:id", async (request, response) => {
-  try {
-    await Blog.findByIdAndDelete(request.params.id);
-  } catch (error) {
-    return response.sendStatus(400);
+    const blog = await Blog.findById(request.params.id);
+
+    if (blog.user.toString() === user._id.toString()) {
+      await Blog.findByIdAndDelete(blog._id.toString());
+      response.sendStatus(204);
+    } else {
+      response.sendStatus(401);
+    }
   }
-  return response.sendStatus(200);
-});
+);
 
-blogsRouter.put("/:id", async (request, response) => {
-  if (Object.keys(request.body).length === 0) {
-    return response.sendStatus(400);
-  }
-
+blogsRouter.put("/:id", tokenExtractor, async (request, response) => {
   const { title, author, url, likes } = request.body;
 
   const blog = {
@@ -40,15 +61,11 @@ blogsRouter.put("/:id", async (request, response) => {
     likes,
   };
 
-  try {
-    await Blog.findByIdAndUpdate(request.params.id, blog, {
-      new: true,
-    });
-  } catch (error) {
-    return response.sendStatus(400);
-  }
+  const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, {
+    new: true,
+  });
 
-  return response.sendStatus(200);
+  response.json(updatedBlog);
 });
 
 module.exports = blogsRouter;

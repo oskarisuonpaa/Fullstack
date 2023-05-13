@@ -3,40 +3,35 @@ import Blog from "./components/Blog";
 import LoginForm from "./components/LoginForm";
 import BlogForm from "./components/BlogForm";
 import Togglable from "./components/Togglable";
-import blogService from "./services/blogs";
 import loginService from "./services/login";
 import Notification from "./components/Notification";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setNotification } from "./reducers/notificationReducer";
+import {
+  createBlog,
+  initializeBlogs,
+  likeBlog,
+  removeBlog,
+} from "./reducers/blogReducer";
+import { setUser } from "./reducers/userReducer";
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
-  const [needsUpdate, setNeedsUpdate] = useState(true);
+  const dispatch = useDispatch();
+  const blogs = useSelector((state) => state.blogs);
+  const user = useSelector((state) => state.user);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
-
-  const dispatch = useDispatch();
 
   useEffect(() => {
-    if (needsUpdate) {
-      const get = async () => {
-        const blogs = await blogService.getAll();
-        const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes);
-        setBlogs(sortedBlogs);
-      };
-      get();
-      setNeedsUpdate(false);
-    }
-  }, [needsUpdate]);
+    dispatch(initializeBlogs());
+  }, [dispatch]);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
-      setUser(user);
-      blogService.setToken(user.token);
+      dispatch(setUser(user));
     }
   }, []);
 
@@ -49,8 +44,7 @@ const App = () => {
         password,
       });
       window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user));
-      blogService.setToken(user.token);
-      setUser(user);
+      dispatch(setUser(user));
       setUsername("");
       setPassword("");
       dispatch(setNotification("success", `logged in as ${user.username}`, 5));
@@ -61,16 +55,13 @@ const App = () => {
 
   const handleLogout = () => {
     window.localStorage.removeItem("loggedBlogappUser");
-    setUser(null);
-    blogService.setToken(null);
+    dispatch(setUser(null));
     dispatch(setNotification("success", "logged out successfully", 5));
   };
 
   const addBlog = async (newBlog) => {
     try {
-      const returnedBlog = await blogService.create(newBlog);
-      setBlogs(blogs.concat(returnedBlog));
-      setNeedsUpdate(true);
+      await dispatch(createBlog(newBlog));
       dispatch(
         setNotification(
           "success",
@@ -84,19 +75,10 @@ const App = () => {
   };
 
   const handleBlogLike = async (blog) => {
-    const blogObject = {
-      user: blog.user.id,
-      likes: blog.likes + 1,
-      author: blog.author,
-      title: blog.title,
-      url: blog.url,
-    };
-
     try {
-      await blogService.update(blog.id, blogObject);
-      setNeedsUpdate(true);
-    } catch (exception) {
-      console.log(exception);
+      dispatch(likeBlog(blog));
+    } catch (error) {
+      dispatch(setNotification("error", error.response.data.error, 5));
     }
   };
 
@@ -106,10 +88,9 @@ const App = () => {
     }
 
     try {
-      await blogService.remove(blog.id);
-      setNeedsUpdate(true);
-    } catch (exception) {
-      console.log(exception);
+      dispatch(removeBlog(blog.id));
+    } catch (error) {
+      dispatch(setNotification("error", error.response.data.error, 5));
     }
   };
 

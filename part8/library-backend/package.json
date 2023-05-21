@@ -1,11 +1,16 @@
 {
   "dependencies": {
     "@apollo/server": "^4.7.1",
-    "dotenv": "^16.0.3",
+    "@graphql-tools/schema": "^10.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
     "graphql": "^16.6.0",
+    "graphql-subscriptions": "^2.0.0",
+    "graphql-ws": "^5.13.1",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.1.1",
-    "mongoose-unique-validator": "^4.0.0"
+    "mongoose-unique-validator": "^4.0.0",
+    "ws": "^8.13.0"
   },
   "name": "part8",
   "version": "1.0.0",

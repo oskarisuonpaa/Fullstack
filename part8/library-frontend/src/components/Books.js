@@ -2,39 +2,42 @@ import { useQuery } from "@apollo/client";
 import { useState } from "react";
 import { ALL_BOOKS } from "../queries";
 
-const Books = (props) => {
-  const [filter, setFilter] = useState(null);
-  const result = useQuery(ALL_BOOKS, { variables: { genre: filter } });
+const FilterButtons = ({ books, setFilter }) => {
+  let genres = [];
+  books.map((b) =>
+    b.genres.forEach((genre) => {
+      if (!genres.includes(genre)) {
+        genres.push(genre);
+      }
+    })
+  );
 
-  if (!props.show) {
+  return (
+    <>
+      {genres.map((genre) => (
+        <button key={genre} onClick={() => setFilter(genre)}>
+          {genre}
+        </button>
+      ))}
+      <button onClick={() => setFilter(null)}>all genres</button>
+    </>
+  );
+};
+
+const Books = ({ books, show }) => {
+  const [filter, setFilter] = useState(null);
+  const result = useQuery(ALL_BOOKS, {
+    variables: { genre: filter },
+    skip: !filter,
+  });
+
+  if (!show) {
     return null;
   } else if (result.loading) {
     return <div>loading...</div>;
   }
 
-  const books = result.data.allBooks;
-
-  const filterButtons = () => {
-    let genres = [];
-    books.map((b) =>
-      b.genres.forEach((genre) => {
-        if (!genres.includes(genre)) {
-          genres.push(genre);
-        }
-      })
-    );
-
-    return (
-      <>
-        {genres.map((genre) => (
-          <button key={genre} onClick={() => setFilter(genre)}>
-            {genre}
-          </button>
-        ))}
-        <button onClick={() => setFilter(null)}>all genres</button>
-      </>
-    );
-  };
+  const booksToShow = filter ? result.data.allBooks : books;
 
   return (
     <div>
@@ -47,7 +50,7 @@ const Books = (props) => {
             <th>author</th>
             <th>published</th>
           </tr>
-          {books.map((a) => (
+          {booksToShow.map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name}</td>
@@ -56,7 +59,7 @@ const Books = (props) => {
           ))}
         </tbody>
       </table>
-      {filterButtons()}
+      <FilterButtons books={books} setFilter={setFilter} />
     </div>
   );
 };

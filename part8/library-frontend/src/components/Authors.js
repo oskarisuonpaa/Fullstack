@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ALL_AUTHORS, EDIT_AUTHOR } from "../queries";
 import Select from "react-select";
 
-const Authors = (props) => {
+const Authors = ({ show, token }) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [born, setBorn] = useState("");
 
@@ -12,7 +12,7 @@ const Authors = (props) => {
     refetchQueries: [{ query: ALL_AUTHORS }],
   });
 
-  if (!props.show) {
+  if (!show) {
     return null;
   } else if (result.loading) {
     return <div>loading...</div>;
@@ -55,7 +55,7 @@ const Authors = (props) => {
           ))}
         </tbody>
       </table>
-      {props.token && (
+      {token && (
         <>
           <h3>Set birthyear</h3>
           <form onSubmit={submit}>
